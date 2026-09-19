@@ -2,6 +2,10 @@
 
 Unity 6 runtime component for a local MCP/CLI bridge.
 
+The companion host in this repository provides the MCP tools and CLI. This UPM
+package is the Player-side runtime only; it does not include .NET, MCP SDK, or
+Unity Editor code.
+
 The package binds only to `127.0.0.1`. It accepts one UTF-8 JSON Lines request
 per TCP connection and queues Unity operations for `Update()`, so Unity APIs and
 registered command handlers execute on the Unity main thread.
@@ -47,3 +51,17 @@ mismatch returns `SESSION_MISMATCH`; an unknown command returns
 
 This package is local-development infrastructure. It does not provide remote
 authentication, TLS, authorization, replay protection, or audit logging.
+
+## Companion host
+
+From the repository root, launch the host and Player with:
+
+```powershell
+dotnet run --project ".\Runtime Bridge for Unity" -- app start --exe C:\build\Game.exe --port 4765
+dotnet run --project ".\Runtime Bridge for Unity" -- app wait-ready --session <session>
+dotnet run --project ".\Runtime Bridge for Unity" -- command echo --session <session> --payload '{"message":"hello"}'
+dotnet run --project ".\Runtime Bridge for Unity" -- app stop --session <session>
+```
+
+The package tag `v0.1.0` is the first published package version. Pin a Git URL
+to a tag for reproducible project setup rather than tracking `main`.

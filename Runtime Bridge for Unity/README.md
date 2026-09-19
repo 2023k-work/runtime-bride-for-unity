@@ -4,6 +4,9 @@ A local MCP server and CLI for controlling a **built Unity Player**. The Unity
 runtime is authoritative for Unity state and command execution; the desktop host
 only launches, identifies, queries, and sends commands to that runtime.
 
+The Unity Player-side component is delivered separately as the UPM package
+`com.2023k-work.runtime-bridge`. This project contains the MCP/CLI host.
+
 ## Host modes
 
 With no arguments (or with `mcp`) the executable runs an MCP stdio server. Any
@@ -18,13 +21,17 @@ dotnet run --project ".\Runtime Bridge for Unity" -- command echo --session <id>
 dotnet run --project ".\Runtime Bridge for Unity" -- app stop --session <id>
 ```
 
+`app start` persists process metadata in the local session store. Use the
+returned session id with `app wait-ready`, `app status`, and `app stop`.
+Override the default session directory with `RUNTIME_BRIDGE_STATE_DIR`.
+
 MCP tools expose the same application service: `unity_player_start`,
 `unity_player_wait_ready`, `unity_player_status`, `unity_player_command`, and
 `unity_player_stop`.
 
 ## Unity setup
 
-Install the Unity 6 UPM package from the GitHub URL above. The package declares
+Install the Unity 6 UPM package from the repository root README URL. The package declares
 `com.unity.nuget.newtonsoft-json` and provides `RuntimeBridgeUnity`; attach that
 component to a GameObject in the Player's startup scene. The host launches the
 Player with:
