@@ -144,9 +144,14 @@ Survey conclusion:
 - Package installed through `UnityEditor.PackageManager.Client.Add` from a local
   package path — passed, resolved `com.unity.nuget.newtonsoft-json` 3.2.2.
 - Unity 6.3.21f1 batchmode import/compile verification — passed.
-- GitHub `main` commit `8418853` and tag `v0.1.0` — pushed successfully.
+- Initial GitHub package commit `8418853` and tag `v0.1.0` — pushed
+  successfully; the tag remains immutable.
+- Remediation commit `1b0e8df` and tag `v0.1.1` — pushed successfully.
 - GitHub URL/tag installation — passed; UPM reported `source=Git`, version
   `0.1.0`, and imported `RuntimeBridge.Unity` successfully.
+- GitHub URL/tag installation for `v0.1.1` — passed; UPM reported
+  `source=Git`, version `0.1.1`, and imported/compiled `RuntimeBridge.Unity`
+  successfully.
 - First push attempt was rejected because the connected OAuth credential lacks
   GitHub `workflow` scope. The workflow file was excluded from the release
   commit; package and host validation remain unaffected.
