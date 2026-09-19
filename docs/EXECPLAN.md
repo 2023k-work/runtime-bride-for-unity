@@ -121,7 +121,9 @@ Survey conclusion:
 3. Add CLI mode while preserving MCP stdio ownership. — done
 4. Add MCP tools as thin adapters over the same application service. — done
 5. Add the Unity runtime component and end-to-end fake-player tests. — done
-6. Replace template packaging/docs and run build/test/package checks. — done
+6. Replace the template packaging/docs and run build/test/package checks. — done
+7. Package the Unity runtime component as a Unity 6 UPM Git package and verify
+   it with the Unity 6.3.21f1 Editor. — in progress
 
 ## Verification record
 
@@ -136,6 +138,13 @@ Survey conclusion:
   identity remained in runtime source, package metadata, or user documentation.
 - Not run: real Unity Player compilation/execution and external MCP client
   negotiation.
+
+### Unity package verification
+
+- Package installed through `UnityEditor.PackageManager.Client.Add` from a local
+  package path — passed, resolved `com.unity.nuget.newtonsoft-json` 3.2.2.
+- Unity 6.3.21f1 batchmode import/compile verification — passed.
+- GitHub URL/tag installation — pending commit, push, and tag publication.
 
 ## Explicit exclusions
 

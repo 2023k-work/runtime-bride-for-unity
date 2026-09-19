@@ -16,7 +16,8 @@ human / CI ──CLI────┘                         │                 
 - `Runtime/PlayerProcess.cs` owns launch, readiness polling, and verified graceful stop.
 - `Runtime/RuntimeSession.cs` owns launch metadata and process identity verification.
 - `Protocol/BridgeClient.cs` owns loopback framing, correlation, limits, and timeouts.
-- `unity/RuntimeBridgeUnity.cs` owns authoritative Unity state and main-thread dispatch.
+- `Packages/com.2023k-work.runtime-bridge/Runtime/RuntimeBridgeUnity.cs` owns
+  authoritative Unity state and main-thread dispatch.
 - `tests/RuntimeBridge.FakePlayer` is the executable protocol/lifecycle test seam.
 
 ## Stable contracts

@@ -13,6 +13,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
+namespace RuntimeBridge.Unity
+{
+[AddComponentMenu("Runtime Bridge/Runtime Bridge Unity")]
 public sealed class RuntimeBridgeUnity : MonoBehaviour
 {
     [Serializable]
@@ -169,4 +172,5 @@ public sealed class RuntimeBridgeUnity : MonoBehaviour
         for (var i = 0; i + 1 < args.Length; i++) if (args[i] == name) return args[i + 1];
         return null;
     }
+}
 }

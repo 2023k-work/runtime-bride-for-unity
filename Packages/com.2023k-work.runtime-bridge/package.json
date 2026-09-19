@@ -1,0 +1,15 @@
+{
+  "name": "com.2023k-work.runtime-bridge",
+  "version": "0.1.0",
+  "displayName": "Runtime Bridge for Unity",
+  "description": "A Unity 6 Player runtime bridge for local MCP and CLI control.",
+  "unity": "6000.0",
+  "unityRelease": "0f1",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
+  "keywords": ["mcp", "cli", "runtime", "player", "json-lines"],
+  "author": { "name": "2023k-work" },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/2023k-work/runtime-bride-for-unity/tree/main/Packages/com.2023k-work.runtime-bridge"
+}

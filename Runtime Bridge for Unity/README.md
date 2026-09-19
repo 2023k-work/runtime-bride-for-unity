@@ -24,9 +24,10 @@ MCP tools expose the same application service: `unity_player_start`,
 
 ## Unity setup
 
-Copy `../unity/RuntimeBridgeUnity.cs` into the Unity project, install UPM package
-`com.unity.nuget.newtonsoft-json`, and attach the component to a GameObject in the
-Player's startup scene. The host launches the Player with:
+Install the Unity 6 UPM package from the GitHub URL above. The package declares
+`com.unity.nuget.newtonsoft-json` and provides `RuntimeBridgeUnity`; attach that
+component to a GameObject in the Player's startup scene. The host launches the
+Player with:
 
 ```text
 Game.exe --runtime-bridge-session <id> --runtime-bridge-port 4765 -logFile <path>
