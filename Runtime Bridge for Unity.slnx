@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Runtime Bridge for Unity/Runtime Bridge for Unity.csproj" />
+  <Project Path="tests/RuntimeBridge.FakePlayer/RuntimeBridge.FakePlayer.csproj" />
+  <Project Path="tests/RuntimeBridge.Tests/RuntimeBridge.Tests.csproj" />
+</Solution>
