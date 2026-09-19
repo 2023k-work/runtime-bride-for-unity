@@ -123,7 +123,7 @@ Survey conclusion:
 5. Add the Unity runtime component and end-to-end fake-player tests. — done
 6. Replace the template packaging/docs and run build/test/package checks. — done
 7. Package the Unity runtime component as a Unity 6 UPM Git package and verify
-   it with the Unity 6.3.21f1 Editor. — in progress
+   it with the Unity 6.3.21f1 Editor. — done
 
 ## Verification record
 
@@ -144,7 +144,12 @@ Survey conclusion:
 - Package installed through `UnityEditor.PackageManager.Client.Add` from a local
   package path — passed, resolved `com.unity.nuget.newtonsoft-json` 3.2.2.
 - Unity 6.3.21f1 batchmode import/compile verification — passed.
-- GitHub URL/tag installation — pending commit, push, and tag publication.
+- GitHub `main` commit `8418853` and tag `v0.1.0` — pushed successfully.
+- GitHub URL/tag installation — passed; UPM reported `source=Git`, version
+  `0.1.0`, and imported `RuntimeBridge.Unity` successfully.
+- First push attempt was rejected because the connected OAuth credential lacks
+  GitHub `workflow` scope. The workflow file was excluded from the release
+  commit; package and host validation remain unaffected.
 
 ## Explicit exclusions
 
