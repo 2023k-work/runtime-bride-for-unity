@@ -1,6 +1,6 @@
 {
   "name": "com.2023k-work.runtime-bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Runtime Bridge for Unity",
   "description": "A Unity 6 Player runtime bridge for local MCP and CLI control.",
   "unity": "6000.0",

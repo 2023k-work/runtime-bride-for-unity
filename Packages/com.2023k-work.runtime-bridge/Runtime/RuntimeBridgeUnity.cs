@@ -50,15 +50,31 @@ public sealed class RuntimeBridgeUnity : MonoBehaviour
     private readonly ConcurrentQueue<Pending> _requests = new();
     private readonly ConcurrentQueue<bool> _shutdown = new();
     private readonly Dictionary<string, Func<JToken, JToken>> _handlers = new();
+    private static readonly HashSet<string> ReservedCommandNames = new(StringComparer.Ordinal)
+    {
+        "echo",
+        "smoke"
+    };
     private CancellationTokenSource _stop;
     private TcpListener _listener;
     private Task _acceptLoop;
     private string _session;
     private bool _enabled;
 
+    private void Awake()
+    {
+        // A runtime bridge must continue pumping Update() when the Player loses focus.
+        // Without this, ping still works on the network worker while every queued
+        // Unity operation (ready/status/command/shutdown) eventually times out.
+        Application.runInBackground = true;
+        Debug.Log("RuntimeBridgeUnity: Application.runInBackground=true");
+    }
+
     public void RegisterCommand(string name, Func<JToken, JToken> handler)
     {
         if (string.IsNullOrWhiteSpace(name) || handler == null) throw new ArgumentException("Command and handler are required.");
+        if (ReservedCommandNames.Contains(name))
+            throw new ArgumentException($"Command '{name}' is reserved by RuntimeBridgeUnity.", nameof(name));
         _handlers[name] = handler;
     }
 
@@ -74,8 +90,13 @@ public sealed class RuntimeBridgeUnity : MonoBehaviour
         catch (SocketException ex) { _stop.Dispose(); _stop = null; Debug.LogError("RuntimeBridgeUnity: cannot listen: " + ex.Message); return; }
         _enabled = true;
         _acceptLoop = AcceptLoopAsync(_stop.Token);
-        RegisterCommand("echo", payload => payload ?? new JObject());
-        RegisterCommand("smoke", _ => new JObject { ["passed"] = true, ["frame"] = Time.frameCount });
+        RegisterBuiltInCommand("echo", payload => payload ?? new JObject());
+        RegisterBuiltInCommand("smoke", _ => new JObject { ["passed"] = true, ["frame"] = Time.frameCount });
+    }
+
+    private void RegisterBuiltInCommand(string name, Func<JToken, JToken> handler)
+    {
+        _handlers[name] = handler;
     }
 
     private void Update()

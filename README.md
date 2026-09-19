@@ -11,7 +11,7 @@ Install the Unity 6 UPM package from Unity Package Manager with **Add package
 from git URL**:
 
 ```text
-https://github.com/2023k-work/runtime-bride-for-unity.git?path=Packages/com.2023k-work.runtime-bridge#v0.1.0
+https://github.com/2023k-work/runtime-bride-for-unity.git?path=Packages/com.2023k-work.runtime-bridge#v0.1.1
 ```
 
 Package id: `com.2023k-work.runtime-bridge`
@@ -65,6 +65,8 @@ The MCP tools and CLI share the same application service:
   to kill a mismatched process.
 - The protocol has no remote authentication, TLS, authorization, replay
   protection, or audit logging.
+- Runtime commands `echo` and `smoke` are reserved by the bridge; product
+  commands must use distinct names.
 
 ## Development
 

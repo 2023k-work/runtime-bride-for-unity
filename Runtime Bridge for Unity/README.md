@@ -42,7 +42,9 @@ Game.exe --runtime-bridge-session <id> --runtime-bridge-port 4765 -logFile <path
 
 The bridge binds only to loopback. Except for constant `ping` data, requests are
 queued and completed from `Update()`, keeping Unity APIs and registered command
-handlers on Unity's main thread.
+handlers on Unity's main thread. The package enables
+`Application.runInBackground=true` so these queued operations continue when the
+Player loses focus.
 
 ## Protocol and failure semantics
 

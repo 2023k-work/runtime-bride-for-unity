@@ -151,6 +151,35 @@ Survey conclusion:
   GitHub `workflow` scope. The workflow file was excluded from the release
   commit; package and host validation remain unaffected.
 
+### Release gate remediation — 0.1.1
+
+The Unity validation report showed that the original BasicBridge configuration
+could answer worker-thread `ping`, but lost focus stopped the Player update loop;
+therefore queued `ready`, command, and `shutdown` requests timed out unless the
+test harness separately enabled background execution. This was a release-blocking
+configuration defect, not a transport failure.
+
+- `RuntimeBridgeUnity.Awake()` now sets `Application.runInBackground = true`,
+  making the bridge's queued-operation contract independent of Player focus.
+- `echo` and `smoke` are reserved bridge commands. Product handlers must use
+  distinct names; the BasicBridge sample now registers `sample.echo`.
+- The package version is `0.1.1`; the existing `v0.1.0` tag remains immutable.
+
+Verification for this remediation:
+
+- Host regression: 4/4 passed.
+- Unity 6.3.21f1 local package import/compile: passed (`Local version=0.1.1`).
+- Windows Player build with project `runInBackground=0`: passed.
+- Focused Player lifecycle rerun with no harness background override: passed;
+  `ready`, `sample.echo`, built-in `echo`, and `shutdown` all returned success,
+  and the Player exited after shutdown.
+- Main-thread probe: passed with `mainThreadId=1`, `commandThreadId=1`.
+
+The broader P1 stress/malformed-input/platform matrix and LIFE-06 scene unload
+case remain outside this remediation run. The release gate can close the two
+reported P0 blockers, but those deferred cases still require the Unity team's
+planned test pass.
+
 ## Explicit exclusions
 
 - Unity Editor control.

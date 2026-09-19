@@ -11,7 +11,7 @@ namespace RuntimeBridge.Unity.Samples
         private void Awake()
         {
             if (bridge == null) bridge = GetComponent<RuntimeBridgeUnity>();
-            bridge.RegisterCommand("echo", payload => payload ?? new JObject());
+            bridge.RegisterCommand("sample.echo", payload => payload ?? new JObject());
             bridge.RegisterCommand("frame", _ => new JObject { ["frame"] = Time.frameCount });
         }
     }

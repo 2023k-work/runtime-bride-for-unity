@@ -15,7 +15,7 @@ registered command handlers execute on the Unity main thread.
 In Unity Package Manager, choose **Add package from git URL** and use:
 
 ```text
-https://github.com/2023k-work/runtime-bride-for-unity.git?path=Packages/com.2023k-work.runtime-bridge#v0.1.0
+https://github.com/2023k-work/runtime-bride-for-unity.git?path=Packages/com.2023k-work.runtime-bridge#v0.1.1
 ```
 
 The package requires Unity 6 and declares its Newtonsoft JSON dependency in
@@ -39,7 +39,7 @@ public sealed class ExampleRuntimeCommands : MonoBehaviour
 
     private void Awake()
     {
-        bridge.RegisterCommand("echo", payload => payload ?? new JObject());
+        bridge.RegisterCommand("sample.echo", payload => payload ?? new JObject());
     }
 }
 ```
@@ -48,6 +48,11 @@ public sealed class ExampleRuntimeCommands : MonoBehaviour
 `command`, and `shutdown` are completed by the Unity main thread. A session
 mismatch returns `SESSION_MISMATCH`; an unknown command returns
 `UNKNOWN_COMMAND`.
+
+The runtime bridge always enables `Application.runInBackground` because queued
+Unity operations cannot complete while a non-background Player is unfocused.
+The built-in `echo` and `smoke` commands are reserved; product commands should
+use their own names, such as `sample.echo`.
 
 This package is local-development infrastructure. It does not provide remote
 authentication, TLS, authorization, replay protection, or audit logging.
@@ -63,5 +68,5 @@ dotnet run --project ".\Runtime Bridge for Unity" -- command echo --session <ses
 dotnet run --project ".\Runtime Bridge for Unity" -- app stop --session <session>
 ```
 
-The package tag `v0.1.0` is the first published package version. Pin a Git URL
-to a tag for reproducible project setup rather than tracking `main`.
+The package tag `v0.1.1` is the current published package version. Pin a Git
+URL to a tag for reproducible project setup rather than tracking `main`.
