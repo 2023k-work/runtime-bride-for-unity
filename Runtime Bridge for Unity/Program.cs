@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RuntimeBridge.Unity;
 using RuntimeBridge.Unity.Cli;
+using RuntimeBridge.Unity.Scenarios;
 using RuntimeBridge.Unity.Tools;
 
 if (args.Length > 0 && !string.Equals(args[0], "mcp", StringComparison.OrdinalIgnoreCase))
@@ -15,6 +16,7 @@ builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 builder.Services.AddSingleton<RuntimeSessionStore>();
 builder.Services.AddSingleton<PlayerProcess>();
 builder.Services.AddSingleton<RuntimeBridgeService>();
+builder.Services.AddSingleton<RuntimeScenarioRunner>();
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()

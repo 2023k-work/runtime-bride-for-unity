@@ -54,6 +54,28 @@ public sealed class RuntimeBridgeService(RuntimeSessionStore sessions, PlayerPro
     public Task<BridgeResponse> ConnectAsync(string session, int port = PlayerProcess.DefaultPort, int timeoutMilliseconds = 3_000, CancellationToken cancellationToken = default) =>
         Client("127.0.0.1", port, timeoutMilliseconds).SendAsync("hello", session: session, cancellationToken: cancellationToken);
 
+    public async Task<BridgeResponse> WaitReadyAtAsync(string host, int port, string? session,
+        int timeoutMilliseconds = 10_000, CancellationToken cancellationToken = default)
+    {
+        var deadline = DateTimeOffset.UtcNow + Timeout(timeoutMilliseconds);
+        Exception? lastError = null;
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            try
+            {
+                var remaining = deadline - DateTimeOffset.UtcNow;
+                return await Client(host, port, (int)Math.Max(1, Math.Min(remaining.TotalMilliseconds, 250)))
+                    .SendAsync("ready", session: session, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is TimeoutException or SocketException or BridgeProtocolException)
+            {
+                lastError = ex;
+            }
+            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+        }
+        throw new TimeoutException($"Unity Player did not become ready within {timeoutMilliseconds} ms. Last error: {lastError?.Message ?? "none"}");
+    }
+
     public Task<BridgeResponse> SendCommandAsync(string command, string? payloadJson, string? session,
         int port = PlayerProcess.DefaultPort, int timeoutMilliseconds = 3_000, CancellationToken cancellationToken = default)
     {

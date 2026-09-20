@@ -1,0 +1,49 @@
+{
+  "$schema": "../../Schema/runtime-scenario-v1.schema.json",
+  "version": 1,
+  "name": "spell-casting-authority-reject",
+  "metadata": {
+    "description": "Multi-instance authority example. The game owns authorization and Probe state."
+  },
+  "instances": [
+    { "id": "host", "executable": "C:/build/SpellCastingHost.exe", "port": 4773 },
+    { "id": "client-a", "executable": "C:/build/SpellCastingClient.exe", "port": 4774 },
+    { "id": "client-b", "executable": "C:/build/SpellCastingClient.exe", "port": 4775 }
+  ],
+  "setup": [
+    {
+      "id": "target-before",
+      "kind": "probe",
+      "instance": "client-b",
+      "probe": "SpellCasting",
+      "player": "player-b"
+    }
+  ],
+  "actions": [
+    {
+      "id": "unauthorized-attempt",
+      "kind": "command",
+      "instance": "client-a",
+      "command": "spell-casting.prepare-other-player",
+      "payload": { "targetPlayer": "player-b" },
+      "expectedErrorCode": "NOT_AUTHORIZED"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "target-after",
+      "kind": "probe",
+      "instance": "client-b",
+      "probe": "SpellCasting",
+      "player": "player-b"
+    },
+    {
+      "id": "target-unchanged",
+      "kind": "assert",
+      "actual": { "step": "target-after", "path": "data" },
+      "operator": "unchangedFrom",
+      "expectedFrom": { "step": "target-before", "path": "data" }
+    }
+  ],
+  "cleanup": []
+}

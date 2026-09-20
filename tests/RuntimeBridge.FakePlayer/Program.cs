@@ -11,18 +11,19 @@ var port = values.TryGetValue("--runtime-bridge-port", out var text) && int.TryP
 if (values.TryGetValue("-logFile", out var log)) await File.AppendAllTextAsync(log, $"fake-player-started session={session}{Environment.NewLine}");
 using var stop = new CancellationTokenSource();
 var listener = new TcpListener(IPAddress.Loopback, port); listener.Start();
+var phase = "Idle";
 try
 {
     while (!stop.IsCancellationRequested)
     {
         using var tcp = await listener.AcceptTcpClientAsync(stop.Token);
-        await Handle(tcp, session, stop);
+        await Handle(tcp, session, stop, () => phase, value => phase = value);
     }
 }
 catch (OperationCanceledException) { }
 return 0;
 
-static async Task Handle(TcpClient tcp, string session, CancellationTokenSource stop)
+static async Task Handle(TcpClient tcp, string session, CancellationTokenSource stop, Func<string> getPhase, Action<string> setPhase)
 {
     await using var stream = tcp.GetStream();
     using var reader = new StreamReader(stream, Encoding.UTF8, false, leaveOpen: true);
@@ -42,6 +43,8 @@ static async Task Handle(TcpClient tcp, string session, CancellationTokenSource 
             "ready" => JsonSerializer.SerializeToElement(new { ready = true, session }),
             "status" => JsonSerializer.SerializeToElement(new { state = "running", session }),
             "command" when request.Command == "echo" => request.Payload ?? JsonSerializer.SerializeToElement(new { }),
+            "command" when request.Command == "scenario.advance" => Advance(getPhase, setPhase),
+            "command" when request.Command == "runtime.probe" => JsonSerializer.SerializeToElement(new { phase = getPhase() }),
             "shutdown" => JsonSerializer.SerializeToElement(new { state = "shutting_down", session }),
             _ => default
         };
@@ -56,6 +59,12 @@ static async Task Handle(TcpClient tcp, string session, CancellationTokenSource 
 
 static BridgeResponse Fail(BridgeRequest request, string session, string code) => new()
 { Id = request.Id, Operation = request.Operation, Session = session, Error = new BridgeError { Code = code, Message = code } };
+
+static JsonElement Advance(Func<string> getPhase, Action<string> setPhase)
+{
+    setPhase("Prepared");
+    return JsonSerializer.SerializeToElement(new { phase = getPhase() });
+}
 
 static Dictionary<string, string> Parse(string[] args)
 {

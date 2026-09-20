@@ -19,11 +19,20 @@ dotnet run --project ".\Runtime Bridge for Unity" -- app wait-ready --session <i
 dotnet run --project ".\Runtime Bridge for Unity" -- app status --session <id>
 dotnet run --project ".\Runtime Bridge for Unity" -- command echo --session <id> --payload '{"message":"hello"}'
 dotnet run --project ".\Runtime Bridge for Unity" -- app stop --session <id>
+dotnet run --project ".\Runtime Bridge for Unity" -- scenario validate ".\Runtime Bridge for Unity\Scenarios\Examples\SpellCasting\prepare-magic-bolt.json"
+dotnet run --project ".\Runtime Bridge for Unity" -- scenario run ".\Runtime Bridge for Unity\Scenarios\Examples\SpellCasting\prepare-magic-bolt.json"
 ```
 
 `app start` persists process metadata in the local session store. Use the
 returned session id with `app wait-ready`, `app status`, and `app stop`.
 Override the default session directory with `RUNTIME_BRIDGE_STATE_DIR`.
+
+Runtime Scenario Runner v1 uses versioned JSON under `Scenarios/`. It starts or
+attaches to named Players, executes setup/actions/assertions/cleanup, polls
+structured Probe commands, preserves command errors, and writes `result.json`,
+`commands.jsonl`, `probes.jsonl`, host logs, and per-instance Player logs. A
+scenario assertion failure is `FAIL`; a timeout, connection, or protocol
+failure is `ERROR` and is not silently reported as a gameplay failure.
 
 MCP tools expose the same application service: `unity_player_start`,
 `unity_player_wait_ready`, `unity_player_status`, `unity_player_command`, and

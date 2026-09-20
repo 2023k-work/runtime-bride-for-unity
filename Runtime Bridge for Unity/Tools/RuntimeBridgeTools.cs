@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using RuntimeBridge.Unity.Scenarios;
 
 namespace RuntimeBridge.Unity.Tools;
 
 [McpServerToolType]
-public sealed class RuntimeBridgeTools(RuntimeBridgeService bridge)
+public sealed class RuntimeBridgeTools(RuntimeBridgeService bridge, RuntimeScenarioRunner scenarios)
 {
     [McpServerTool(Name = "unity_player_start")]
     [Description("Starts a built Unity Player with the local runtime bridge and returns tracked process/session metadata.")]
@@ -33,4 +34,40 @@ public sealed class RuntimeBridgeTools(RuntimeBridgeService bridge)
     [Description("Requests graceful shutdown of a tracked Player after verifying PID, executable path, and process start time. Never kills a mismatched process.")]
     public Task<object> StopPlayer(string session, int timeoutMilliseconds = 10_000, CancellationToken cancellationToken = default) =>
         bridge.StopPlayerAsync(session, timeoutMilliseconds, cancellationToken);
+
+    [McpServerTool(Name = "unity_scenario_validate")]
+    [Description("Validates a Runtime Scenario JSON file without starting any Unity Player.")]
+    public object ValidateScenario([Description("Absolute or working-directory-relative scenario JSON path.")] string path)
+    {
+        return scenarios.Validate(path);
+    }
+
+    [McpServerTool(Name = "unity_scenario_run")]
+    [Description("Runs one Runtime Scenario JSON file or a directory of scenarios and writes repeatable evidence.")]
+    public Task<ScenarioBatchResult> RunScenario(
+        [Description("Scenario JSON file or directory.")] string path,
+        [Description("Evidence output directory. Defaults to TestResults.")] string? outputDirectory = null,
+        [Description("Optional source Git commit recorded in result.json.")] string? gitCommit = null,
+        [Description("Optional build artifact recorded in result.json.")] string? buildArtifact = null,
+        CancellationToken cancellationToken = default)
+    {
+        return scenarios.RunPathAsync(path, new ScenarioRunOptions
+        {
+            OutputDirectory = outputDirectory,
+            GitCommit = gitCommit,
+            BuildArtifact = buildArtifact
+        }, cancellationToken);
+    }
+
+    [McpServerTool(Name = "unity_scenario_list")]
+    [Description("Lists Runtime Scenario JSON files without starting any Unity Player.")]
+    public object ListScenarios([Description("Scenario directory.")] string? path = null)
+    {
+        var directory = string.IsNullOrWhiteSpace(path)
+            ? (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "Runtime Bridge for Unity", "Scenarios"))
+                ? Path.Combine(Environment.CurrentDirectory, "Runtime Bridge for Unity", "Scenarios")
+                : Path.Combine(Environment.CurrentDirectory, "Scenarios"))
+            : path;
+        return new { ok = true, path = Path.GetFullPath(directory), scenarios = scenarios.List(directory) };
+    }
 }

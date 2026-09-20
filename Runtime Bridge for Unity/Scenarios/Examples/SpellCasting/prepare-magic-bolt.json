@@ -1,0 +1,83 @@
+{
+  "$schema": "../../Schema/runtime-scenario-v1.schema.json",
+  "version": 1,
+  "name": "prepare-magic-bolt",
+  "metadata": {
+    "description": "Command -> Probe -> Assert example. Replace the executable path."
+  },
+  "instances": [
+    {
+      "id": "client",
+      "executable": "C:/build/SpellCastingPlayer.exe",
+      "port": 4772
+    }
+  ],
+  "setup": [
+    {
+      "id": "before",
+      "kind": "probe",
+      "instance": "client",
+      "probe": "SpellCasting",
+      "player": "local"
+    }
+  ],
+  "actions": [
+    {
+      "id": "begin",
+      "kind": "command",
+      "instance": "client",
+      "command": "spell-casting.begin"
+    },
+    {
+      "id": "input-up",
+      "kind": "command",
+      "instance": "client",
+      "command": "spell-casting.input",
+      "payload": { "value": "up" }
+    },
+    {
+      "id": "input-right",
+      "kind": "command",
+      "instance": "client",
+      "command": "spell-casting.input",
+      "payload": { "value": "right" }
+    },
+    {
+      "id": "input-down",
+      "kind": "command",
+      "instance": "client",
+      "command": "spell-casting.input",
+      "payload": { "value": "down" }
+    },
+    {
+      "id": "end",
+      "kind": "command",
+      "instance": "client",
+      "command": "spell-casting.end"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "wait-prepared",
+      "kind": "wait",
+      "instance": "client",
+      "probe": "SpellCasting",
+      "player": "local",
+      "condition": {
+        "path": "data.phase",
+        "operator": "equals",
+        "value": "Prepared"
+      },
+      "timeoutMs": 5000,
+      "pollMs": 50
+    },
+    {
+      "id": "phase-changed",
+      "kind": "assert",
+      "actual": { "step": "wait-prepared", "path": "value.data.phase" },
+      "operator": "changedFrom",
+      "expectedFrom": { "step": "before", "path": "data.phase" }
+    }
+  ],
+  "cleanup": []
+}

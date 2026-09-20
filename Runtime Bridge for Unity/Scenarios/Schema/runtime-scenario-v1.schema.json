@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2023k-work/runtime-bride-for-unity/blob/main/Runtime%20Bridge%20for%20Unity/Scenarios/Schema/runtime-scenario-v1.schema.json",
+  "title": "Runtime Bridge Scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "name", "instances", "setup", "actions", "assertions", "cleanup"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "instances": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/instance" }
+    },
+    "preconditions": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "setup": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "assertions": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "cleanup": { "type": "array", "items": { "$ref": "#/$defs/step" } }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string" },
+        "gitCommit": { "type": "string" },
+        "buildArtifact": { "type": "string" }
+      }
+    },
+    "instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "executable": { "type": "string" },
+        "session": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "logDirectory": { "type": "string" }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step", "path"],
+      "properties": {
+        "step": { "type": "string", "minLength": 1 },
+        "path": { "type": "string" }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "operator"],
+      "properties": {
+        "path": { "type": "string" },
+        "operator": { "type": "string" },
+        "value": {},
+        "expectedFrom": { "$ref": "#/$defs/reference" }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["command", "probe", "wait", "assert", "manual"] },
+        "instance": { "type": "string" },
+        "command": { "type": "string" },
+        "payload": {},
+        "probe": { "type": "string" },
+        "player": { "type": "string" },
+        "probeCommand": { "type": "string" },
+        "condition": { "$ref": "#/$defs/condition" },
+        "actual": { "$ref": "#/$defs/reference" },
+        "operator": { "type": "string" },
+        "value": {},
+        "expectedFrom": { "$ref": "#/$defs/reference" },
+        "reason": { "type": "string" },
+        "expectedErrorCode": { "type": "string" },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "pollMs": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

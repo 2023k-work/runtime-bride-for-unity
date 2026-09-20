@@ -1,0 +1,50 @@
+{
+  "$schema": "../../Schema/runtime-scenario-v1.schema.json",
+  "version": 1,
+  "name": "player-movement-basic-move",
+  "metadata": {
+    "description": "Generic single-player command and probe example. Replace the executable path."
+  },
+  "instances": [
+    {
+      "id": "player",
+      "executable": "C:/build/Player.exe",
+      "port": 4771
+    }
+  ],
+  "setup": [
+    {
+      "id": "capture-before",
+      "kind": "probe",
+      "instance": "player",
+      "probe": "PlayerMovement",
+      "player": "local"
+    }
+  ],
+  "actions": [
+    {
+      "id": "move-right",
+      "kind": "command",
+      "instance": "player",
+      "command": "player-movement.input",
+      "payload": { "value": "right" }
+    }
+  ],
+  "assertions": [
+    {
+      "id": "capture-after",
+      "kind": "probe",
+      "instance": "player",
+      "probe": "PlayerMovement",
+      "player": "local"
+    },
+    {
+      "id": "position-changed",
+      "kind": "assert",
+      "actual": { "step": "capture-after", "path": "data.position" },
+      "operator": "changedFrom",
+      "expectedFrom": { "step": "capture-before", "path": "data.position" }
+    }
+  ],
+  "cleanup": []
+}

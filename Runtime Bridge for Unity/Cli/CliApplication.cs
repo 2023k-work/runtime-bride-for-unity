@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Text.Json;
 using RuntimeBridge.Unity.Protocol;
+using RuntimeBridge.Unity.Scenarios;
 
 namespace RuntimeBridge.Unity.Cli;
 
@@ -16,6 +17,9 @@ internal static class CliApplication
           runtime-bridge-unity ping [--port <n>]
           runtime-bridge-unity connect --session <id> [--port <n>]
           runtime-bridge-unity command <name> [--session <id>] [--payload <json>] [--port <n>]
+          runtime-bridge-unity scenario validate <file>
+          runtime-bridge-unity scenario run <file-or-directory> [--output-dir <dir>]
+          runtime-bridge-unity scenario list [directory]
         """;
 
     public static async Task<int> RunAsync(string[] args)
@@ -27,6 +31,12 @@ internal static class CliApplication
             if (options.Command is "version") return Emit(new { ok = true, version = "runtime-bridge-unity 0.1.0-beta" });
             var store = new RuntimeSessionStore();
             var service = new RuntimeBridgeService(store, new PlayerProcess(store));
+            var scenarios = new RuntimeScenarioRunner(service);
+            if (options.Command == "scenario")
+            {
+                var scenario = await RunScenarioAsync(scenarios, options).ConfigureAwait(false);
+                return Emit(scenario.Value, options.Pretty, scenario.ExitCode);
+            }
             object result = options.Command switch
             {
                 "ping" => await service.PingAsync(options.Port, options.Timeout),
@@ -44,7 +54,7 @@ internal static class CliApplication
         catch (TimeoutException ex) { return Error("TIMEOUT_UNKNOWN", ex.Message, 4); }
         catch (SocketException ex) { return Error("CONNECTION", ex.Message, 5); }
         catch (BridgeProtocolException ex) { return Error("PROTOCOL", ex.Message, 6); }
-        catch (Exception ex) when (ex is IOException or JsonException or ArgumentException or InvalidOperationException) { return Error("ERROR", ex.Message, 1); }
+        catch (Exception ex) when (ex is IOException or DirectoryNotFoundException or JsonException or ArgumentException or InvalidOperationException) { return Error("ERROR", ex.Message, 1); }
     }
 
     private static async Task<object> RunAppAsync(RuntimeBridgeService service, Options options) => options.Action switch
@@ -55,6 +65,36 @@ internal static class CliApplication
         "stop" => await service.StopPlayerAsync(Required(options.Session, "--session"), options.Timeout),
         _ => throw new CliUsageException("app requires start, status, wait-ready, or stop.")
     };
+
+    private static async Task<(object Value, int ExitCode)> RunScenarioAsync(RuntimeScenarioRunner runner, Options options)
+    {
+        var path = options.ScenarioPath;
+        switch (options.Action)
+        {
+            case "validate":
+                var validation = runner.Validate(Required(path, "scenario file"));
+                return (validation, validation.Valid ? 0 : 2);
+            case "list":
+                var directory = string.IsNullOrWhiteSpace(path) ? DefaultScenarioDirectory() : path;
+                return (new { ok = true, path = Path.GetFullPath(directory), scenarios = runner.List(directory) }, 0);
+            case "run":
+                var batch = await runner.RunPathAsync(Required(path, "scenario path"), new ScenarioRunOptions
+                {
+                    OutputDirectory = options.OutputDirectory,
+                    GitCommit = options.BuildCommit,
+                    BuildArtifact = options.BuildArtifact
+                }).ConfigureAwait(false);
+                return (batch, batch.Status == ScenarioStatus.Pass ? 0 : batch.Status switch
+                {
+                    ScenarioStatus.Fail => 20,
+                    ScenarioStatus.Blocked => 21,
+                    ScenarioStatus.ManualRequired => 22,
+                    _ => 23
+                });
+            default:
+                throw new CliUsageException("scenario requires validate, run, or list.");
+        }
+    }
 
     private static Options Parse(IReadOnlyList<string> args)
     {
@@ -72,6 +112,9 @@ internal static class CliApplication
                 case "--session": result.Session = Read(args, ref i); break;
                 case "--exe": result.Executable = Read(args, ref i); break;
                 case "--payload": result.Payload = Read(args, ref i); break;
+                case "--output-dir": result.OutputDirectory = Read(args, ref i); break;
+                case "--build-commit": result.BuildCommit = Read(args, ref i); break;
+                case "--build-artifact": result.BuildArtifact = Read(args, ref i); break;
                 default:
                     if (args[i].StartsWith('-')) throw new CliUsageException($"Unknown option '{args[i]}'.");
                     values.Add(args[i]); break;
@@ -80,10 +123,20 @@ internal static class CliApplication
         if (result.Command.Length == 0) result.Command = values.FirstOrDefault() ?? throw new CliUsageException("A command is required.");
         if (result.Command == "app") result.Action = values.ElementAtOrDefault(1);
         if (result.Command == "command") result.Name = values.ElementAtOrDefault(1);
+        if (result.Command == "scenario")
+        {
+            result.Action = values.ElementAtOrDefault(1);
+            result.ScenarioPath = values.ElementAtOrDefault(2);
+        }
         return result;
     }
 
     private static string Read(IReadOnlyList<string> args, ref int i) => ++i < args.Count ? args[i] : throw new CliUsageException("Option requires a value.");
+    private static string DefaultScenarioDirectory()
+    {
+        var projectDirectory = Path.Combine(Environment.CurrentDirectory, "Runtime Bridge for Unity", "Scenarios");
+        return Directory.Exists(projectDirectory) ? projectDirectory : Path.Combine(Environment.CurrentDirectory, "Scenarios");
+    }
     private static int PositiveInt(string text, string option, int max) => int.TryParse(text, out var value) && value is > 0 && value <= max ? value : throw new CliUsageException($"{option} has an invalid value.");
     private static string Required(string? value, string name) => !string.IsNullOrWhiteSpace(value) ? value : throw new CliUsageException($"{name} is required.");
     private static int Emit(object value, bool pretty = false, int code = 0) { Console.WriteLine(JsonSerializer.Serialize(value, new JsonSerializerOptions(BridgeJson.Options) { WriteIndented = pretty })); return code; }
@@ -95,6 +148,8 @@ internal static class CliApplication
         public string? Name { get; set; } public string? Session { get; set; } public string? Executable { get; set; }
         public string? Payload { get; set; } public int Port { get; set; } = PlayerProcess.DefaultPort;
         public int Timeout { get; set; } = 3000; public bool Pretty { get; set; }
+        public string? ScenarioPath { get; set; } public string? OutputDirectory { get; set; }
+        public string? BuildCommit { get; set; } public string? BuildArtifact { get; set; }
     }
 }
 

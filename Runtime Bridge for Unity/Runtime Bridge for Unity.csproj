@@ -33,6 +33,8 @@
   <ItemGroup>
     <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="Scenarios\**\*.json" Pack="true" PackagePath="/scenarios/" />
+    <None Include="Scenarios\**\*.md" Pack="true" PackagePath="/scenarios/" />
   </ItemGroup>
 
   <ItemGroup>

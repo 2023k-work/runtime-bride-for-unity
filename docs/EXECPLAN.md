@@ -124,6 +124,9 @@ Survey conclusion:
 6. Replace the template packaging/docs and run build/test/package checks. — done
 7. Package the Unity runtime component as a Unity 6 UPM Git package and verify
    it with the Unity 6.3.21f1 Editor. — done
+8. Add the versioned Runtime Scenario Runner v1, shared by CLI and MCP, with
+   multi-instance lifecycle, Command/Probe orchestration, generic assertions,
+   cleanup, and evidence reports. — done
 
 ## Verification record
 
@@ -138,6 +141,18 @@ Survey conclusion:
   identity remained in runtime source, package metadata, or user documentation.
 - Not run: real Unity Player compilation/execution and external MCP client
   negotiation.
+
+### Runtime Scenario Runner v1 verification
+
+- Host Release build with `UseAppHost=false`/framework-dependent output — passed,
+  0 warnings and 0 errors.
+- Fake Player and custom host harness builds — passed.
+- Host regression and Scenario Runner integration — passed, 8/8 tests.
+- All three packaged examples — passed `scenario validate`.
+- `scenario list` — passed and returned all three examples while excluding the
+  schema document.
+- Not run: the examples against a real Unity 6 gameplay build; the example
+  command and Probe names remain feature-owned integration contracts.
 
 ### Unity package verification
 

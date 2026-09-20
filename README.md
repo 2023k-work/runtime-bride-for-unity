@@ -54,6 +54,28 @@ The MCP tools and CLI share the same application service:
 - `unity_player_status`
 - `unity_player_command`
 - `unity_player_stop`
+- `unity_scenario_validate`
+- `unity_scenario_run`
+- `unity_scenario_list`
+
+## Runtime Scenarios
+
+Runtime Scenario Runner v1 executes versioned JSON specifications using the
+same Player lifecycle and command service as the CLI and MCP adapters. It can
+start or attach to named instances, run `setup -> actions -> assertions ->
+cleanup`, poll structured Probes, compare snapshots, and write repeatable
+evidence under `TestResults/<scenario>/<run-id>/`.
+
+```powershell
+dotnet run --project ".\Runtime Bridge for Unity" -- scenario validate .\Runtime Bridge for Unity\Scenarios\Examples\SpellCasting\prepare-magic-bolt.json
+dotnet run --project ".\Runtime Bridge for Unity" -- scenario run .\Runtime Bridge for Unity\Scenarios\Examples\SpellCasting\prepare-magic-bolt.json
+dotnet run --project ".\Runtime Bridge for Unity" -- scenario list .\Runtime Bridge for Unity\Scenarios\Examples
+```
+
+The formal schema and reusable examples are in
+[`Runtime Bridge for Unity/Scenarios`](Runtime%20Bridge%20for%20Unity/Scenarios).
+The Runner orchestrates and verifies; game rules and authorization remain in
+Unity Commands and Probes.
 
 ## Protocol and safety boundary
 
